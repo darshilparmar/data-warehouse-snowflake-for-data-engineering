@@ -1,0 +1,42 @@
+---
+# ----------------------------------------------------------------------------------------
+version: "3.6"
+volumes:
+  shared-workspace:
+    name: "hadoop-distributed-file-system"
+    driver: local
+services:
+  jupyterlab:
+    image: pavansrivathsa/jupyterlab
+    hostname: JUPYTERLAB
+    container_name: jupyterlab
+    ports:
+      - 4888:4888
+      - 4040:4040
+      - 8050:8050
+    volumes:
+      - shared-workspace:/opt/workspace
+  zookeeper:  # the configuration manager
+    hostname: ZOOKEEPER
+    container_name: zookeeper
+    image: 'bitnami/zookeeper'
+    ports:
+      - 2181:2181
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  nifi:
+    hostname: NiFi
+    container_name: nifi
+    image: apache/nifi:1.14.0
+    ports:
+      - 2080:2080
+    environment:
+      - NIFI_WEB_HTTP_PORT=2080
+      - NIFI_CLUSTER_IS_NODE=true
+      - NIFI_CLUSTER_NODE_PROTOCOL_PORT=2084
+      - NIFI_ZK_CONNECT_STRING=zookeeper:2181
+      - NIFI_ELECTION_MAX_WAIT=1 min
+      - NIFI_SENSITIVE_PROPS_KEY=vvvvvvvvvvvv
+    volumes:
+      - shared-workspace:/opt/workspace/nifi
+...
